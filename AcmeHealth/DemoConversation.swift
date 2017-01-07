@@ -30,7 +30,7 @@ struct Conversation {
 }
 
 // Helper Function to get usernames for a secific User.
-func getName(user: User) -> String{
+func getName(_ user: User) -> String{
     switch user {
     case .Provider:
         return (provider["name"] as? String)!
@@ -45,12 +45,12 @@ let AvatarIDPerson = "707-8956784-56"
 
 // Create avatar with Placeholder Image
 
-let AvatarProvider = JSQMessagesAvatarImageFactory().avatarImageWithPlaceholder(loadProviderImage((provider["name"] as? String)!))
-let AvatarPerson = JSQMessagesAvatarImageFactory().avatarImageWithPlaceholder(loadImage())
+let AvatarProvider = JSQMessagesAvatarImageFactory().avatarImage(withPlaceholder: loadProviderImage((provider["name"] as? String)!))
+let AvatarPerson = JSQMessagesAvatarImageFactory().avatarImage(withPlaceholder: loadImage())
 
 
 // Helper Method for getting an avatar for a specific User.
-func getAvatar(id: String) -> JSQMessagesAvatarImage{
+func getAvatar(_ id: String) -> JSQMessagesAvatarImage{
     let user = User(rawValue: id)!
     
     switch user {

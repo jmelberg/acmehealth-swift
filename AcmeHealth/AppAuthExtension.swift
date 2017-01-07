@@ -28,27 +28,27 @@ class AppAuthExtension: NSObject, OIDAuthStateChangeDelegate {
     /**  Saves the current authState into NSUserDefaults  */
     func saveState() {
         if(authState == nil && authServerState == nil){
-            NSUserDefaults.standardUserDefaults().setObject(nil, forKey: "com.okta.authState")
-            NSUserDefaults.standardUserDefaults().setObject(nil, forKey: "com.okta.authServerState")
+            UserDefaults.standard.set(nil, forKey: "com.okta.authState")
+            UserDefaults.standard.set(nil, forKey: "com.okta.authServerState")
         }
         if(authState != nil){
-            let archivedAuthState = NSKeyedArchiver.archivedDataWithRootObject(authState!)
-            NSUserDefaults.standardUserDefaults().setObject(archivedAuthState, forKey: "com.okta.authState")
+            let archivedAuthState = NSKeyedArchiver.archivedData(withRootObject: authState!)
+            UserDefaults.standard.set(archivedAuthState, forKey: "com.okta.authState")
         }
         if (authServerState != nil) {
-            let archivedAuthServerState = NSKeyedArchiver.archivedDataWithRootObject(authServerState!)
-            NSUserDefaults.standardUserDefaults().setObject(archivedAuthServerState, forKey: "com.okta.authServerState")
+            let archivedAuthServerState = NSKeyedArchiver.archivedData(withRootObject: authServerState!)
+            UserDefaults.standard.set(archivedAuthServerState, forKey: "com.okta.authServerState")
         }
         
-        NSUserDefaults.standardUserDefaults().synchronize()
+        UserDefaults.standard.synchronize()
     }
     
     /**  Loads the current authState from NSUserDefaults */
     func loadState() -> Bool? {
-        if let archivedAuthState = NSUserDefaults.standardUserDefaults().objectForKey("com.okta.authState") as? NSData {
-            if let archivedAuthServerState = NSUserDefaults.standardUserDefaults().objectForKey("com.okta.authServerState") as? NSData {
-                if let authState = NSKeyedUnarchiver.unarchiveObjectWithData(archivedAuthState) as? OIDAuthState {
-                    if let authServerState = NSKeyedUnarchiver.unarchiveObjectWithData(archivedAuthServerState) as? OIDAuthState {
+        if let archivedAuthState = UserDefaults.standard.object(forKey: "com.okta.authState") as? Data {
+            if let archivedAuthServerState = UserDefaults.standard.object(forKey: "com.okta.authServerState") as? Data {
+                if let authState = NSKeyedUnarchiver.unarchiveObject(with: archivedAuthState) as? OIDAuthState {
+                    if let authServerState = NSKeyedUnarchiver.unarchiveObject(with: archivedAuthServerState) as? OIDAuthState {
                         setAuthServerState(authServerState)
                         return true
                     }
@@ -59,13 +59,13 @@ class AppAuthExtension: NSObject, OIDAuthStateChangeDelegate {
         return false
     }
     
-    private func setAuthState(authState:OIDAuthState?){
+    fileprivate func setAuthState(_ authState:OIDAuthState?){
         self.authState = authState
         self.authState?.stateChangeDelegate = self
         self.stateChanged()
     }
     
-    private func setAuthServerState(authState:OIDAuthState?){
+    fileprivate func setAuthServerState(_ authState:OIDAuthState?){
         self.authServerState = authState
         self.authServerState?.stateChangeDelegate = self
         self.stateChanged()
@@ -75,7 +75,7 @@ class AppAuthExtension: NSObject, OIDAuthStateChangeDelegate {
     func stateChanged(){ self.saveState() }
     
     /**  Required method  */
-    func didChangeState(state: OIDAuthState) { self.stateChanged() }
+    func didChange(_ state: OIDAuthState) { self.stateChanged() }
     
     /**  Verifies authState was performed  */
     func checkAuthState() -> Bool {
@@ -84,7 +84,7 @@ class AppAuthExtension: NSObject, OIDAuthStateChangeDelegate {
     }
     
     /** Verify scopes contain required values */
-    func formatScopes(scopes: [String]) -> [String] {
+    func formatScopes(_ scopes: [String]) -> [String] {
         let requiredScopes = ["openid", "profile", "email", "offline_access"]
         var scrubbedScopes = scopes
         for requirement in requiredScopes {
@@ -96,12 +96,12 @@ class AppAuthExtension: NSObject, OIDAuthStateChangeDelegate {
     }
     
     /** Handle Okta authentication -> Returns idToken where user attributes are parsed */
-    func authenticate(controller: UIViewController, completionHandler: (Bool?, NSError?) -> ()){
-        let issuer = NSURL(string: config.issuer)
-        let redirectURI = NSURL(string: config.redirectURI)
+    func authenticate(_ controller: UIViewController, completionHandler: @escaping (Bool?, NSError?) -> ()){
+        let issuer = URL(string: config.issuer)
+        let redirectURI = URL(string: config.redirectURI)
         
         /** Discovers Endpoints via OIDC metadata */
-        OIDAuthorizationService.discoverServiceConfigurationForIssuer(issuer!) {
+        OIDAuthorizationService.discoverConfiguration(forIssuer: issuer!) {
             serviceConfig, error in
             
             if ((serviceConfig == nil)) {
@@ -118,11 +118,11 @@ class AppAuthExtension: NSObject, OIDAuthStateChangeDelegate {
                                                   redirectURL: redirectURI!,
                                                   responseType: OIDResponseTypeCode,
                                                   additionalParameters: nil)
-            let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+            let appDelegate = UIApplication.shared.delegate as! AppDelegate
             
             print("Initiating Okta Authorization Request: \(request)")
             appDelegate.currentAuthorizationFlow =
-                OIDAuthState.authStateByPresentingAuthorizationRequest(request, presentingViewController: controller){
+                OIDAuthState.authState(byPresenting: request, presenting: controller){
                     authorizationResponse, error in
                     if(authorizationResponse != nil) {
                         self.setAuthState(authorizationResponse)
@@ -136,43 +136,36 @@ class AppAuthExtension: NSObject, OIDAuthStateChangeDelegate {
     }
     
     /** Handle custom authorization server authentication -> Returns token for handshake between API */
-    func authorizationServerConfig(controller: UIViewController, completionHandler: (Bool?, NSError?) -> ()) {
+    func authorizationServerConfig(controller: UIViewController, completionHandler: @escaping (Bool?, NSError?) -> ()) {
         
-        let issuer = NSURL(string: config.authIssuer)
-        OIDAuthorizationService.discoverServiceConfigurationForIssuer(issuer!) {
-            authServerConfig, error in
-            if((authServerConfig == nil)) {
-                print("Error retrieving discovery documement: \(error?.localizedDescription)")
-            }
-            print("Retrieved configuration: \(authServerConfig!)")
-            
-            /** Build Authentication Request for accessToken */
-            let request = OIDAuthorizationRequest(configuration: authServerConfig!,
-                                                  clientId: config.clientID,
-                                                  scopes: config.authorizationServerScopes,
-                                                  redirectURL: NSURL(string: config.redirectURI)!,
-                                                  responseType: OIDResponseTypeCode,
-                                                  additionalParameters: nil)
-            print("Initiating Authorization Server Request: \(request)")
-            
-            let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
-            
-            appDelegate.currentAuthorizationFlow =
-                OIDAuthState.authStateByPresentingAuthorizationRequest(request, presentingViewController: controller){
-                    authorizationResponse, error in
-                    if(authorizationResponse != nil) {
-                        self.setAuthServerState(authorizationResponse)
-                        completionHandler(true, nil)
-                    } else {
-                        print("Authorization Error: \(error!.localizedDescription)")
-                        self.setAuthServerState(nil)
-                    }
-            }
+        let authz = URL(string: config.authServerAuthEndpoint)
+        let tokenendz = URL(string: config.authServerTokenEndpoint)
+        
+        /** Build Authentication Request for accessToken */
+        let request = OIDAuthorizationRequest(configuration: OIDServiceConfiguration.init(authorizationEndpoint: authz!, tokenEndpoint: tokenendz!),
+                                              clientId: config.clientID,
+                                              scopes: config.authorizationServerScopes,
+                                              redirectURL: URL(string: config.redirectURI)!,
+                                              responseType: OIDResponseTypeCode,
+                                              additionalParameters: nil)
+        print("Initiating Authorization Server Request: \(request)")
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        
+        appDelegate.currentAuthorizationFlow =
+            OIDAuthState.authState(byPresenting: request, presenting: controller){
+                authorizationResponse, error in
+                if(authorizationResponse != nil) {
+                    self.setAuthServerState(authorizationResponse)
+                    completionHandler(true, nil)
+                } else {
+                    print("Authorization Error: \(error!.localizedDescription)")
+                    self.setAuthServerState(nil)
+                }
         }
     }
     
     /** Calls userInfo endpoint and returns JSON reponse */
-    func pullAttributes(completionHandler: (NSDictionary?, NSError?) ->()){
+    func pullAttributes(_ completionHandler: @escaping (NSDictionary?, NSError?) ->()){
         /** Call userinfo endpoint to retrieve user info */
         let userinfoEndpoint = authState?.lastAuthorizationResponse
             .request.configuration.discoveryDocument?.userinfoEndpoint
@@ -194,10 +187,10 @@ class AppAuthExtension: NSObject, OIDAuthStateChangeDelegate {
         }
         
         /** Given accessToken  -> returns all providers */
-        func callUserInfoEndpoint(token: String, url: String, completionHandler: (NSDictionary?, NSError?) -> ()){
+        func callUserInfoEndpoint(_ token: String, url: String, completionHandler: @escaping (NSDictionary?, NSError?) -> ()){
             let headers = ["Authorization" : "Bearer \(token)",
                            "Accept" :  "application/json"]
-            Alamofire.request(.POST, url, headers : headers)
+            Alamofire.request(url, method: .post, headers : headers)
                 .validate()
                 .responseJSON { response in
                     if let JSON = response.result.value {
@@ -207,7 +200,7 @@ class AppAuthExtension: NSObject, OIDAuthStateChangeDelegate {
         }
         
         /** Call /userinfo from discovery document */
-        callUserInfoEndpoint(token!, url: userinfoEndpoint!.absoluteString!) {
+        callUserInfoEndpoint(token!, url: userinfoEndpoint!.absoluteString) {
             response, err in
             completionHandler(response!, nil)
         }

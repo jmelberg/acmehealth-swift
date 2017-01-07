@@ -36,9 +36,9 @@ class AcmeUser {
     var picture : String!
     var id : String!
     
-    func setFirst(firstName: String) {   self.firstName = firstName}
-    func setLast(lastName: String) {self.lastName = lastName }
-    func setProvider(provider: String) { self.provider = provider }
+    func setFirst(_ firstName: String) {   self.firstName = firstName}
+    func setLast(_ lastName: String) {self.lastName = lastName }
+    func setProvider(_ provider: String) { self.provider = provider }
     func getDetails() -> String { return "\(firstName) \(lastName) \nEmail: \(email) \nPicture: \(picture)" }
 
     init(firstName: String, lastName:String, email: String?, provider:String, picture:String, id: String) {
@@ -53,7 +53,7 @@ class AcmeUser {
 }
 
 /** Given physican id -> returns physician name */
-func getPhysician(id: String) -> String? {
+func getPhysician(_ id: String) -> String? {
     for physician in physicians {
         let physician = physician as NSDictionary
         if (id == "\(physician["id"]!)") {
@@ -64,7 +64,7 @@ func getPhysician(id: String) -> String? {
 }
 
 /** Given physican name -> returns physician id */
-func getPhysicianID(name: String) -> String? {
+func getPhysicianID(_ name: String) -> String? {
     for physician in physicians {
         let physician = physician as NSDictionary
         if (name == "\(physician["name"]!)") {
@@ -75,7 +75,7 @@ func getPhysicianID(name: String) -> String? {
 }
 
 /** Given physican id -> returns physician profile image url */
-func getPhysicianUrl(id: String) -> String? {
+func getPhysicianUrl(_ id: String) -> String? {
     for physician in physicians {
         let physician = physician as NSDictionary
         if (id == "\(physician["id"]!)") {
@@ -87,8 +87,8 @@ func getPhysicianUrl(id: String) -> String? {
 
 /** Loads user image */
 func loadImage() -> UIImage {
-    if let url = NSURL(string: activeUser.picture) {
-        if let data = NSData(contentsOfURL: url) {
+    if let url = URL(string: activeUser.picture) {
+        if let data = try? Data(contentsOf: url) {
             return UIImage(data: data)!
         }
     }
@@ -98,10 +98,10 @@ func loadImage() -> UIImage {
 
 
 /** Loads provider image */
-func loadProviderImage(name: String) -> UIImage {
+func loadProviderImage(_ name: String) -> UIImage {
     let urlString = getPhysicianUrl(getPhysicianID(name)!)
-    if let url = NSURL(string: urlString!) {
-        if let data = NSData(contentsOfURL: url) {
+    if let url = URL(string: urlString!) {
+        if let data = try? Data(contentsOf: url) {
             return UIImage(data: data)!
         }
     }

@@ -30,12 +30,12 @@ class MainViewController: UITabBarController, UITabBarControllerDelegate {
     }
     
     // UITabBarDelegate
-    override func tabBar(tabBar: UITabBar, didSelectItem item: UITabBarItem) {
+    override func tabBar(_ tabBar: UITabBar, didSelect item: UITabBarItem) {
 
     }
     
     // UITabBarControllerDelegate
-    func tabBarController(tabBarController: UITabBarController, didSelectViewController viewController: UIViewController) {
+    func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
     }
 
 }

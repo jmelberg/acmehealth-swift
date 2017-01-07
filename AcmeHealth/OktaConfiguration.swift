@@ -26,6 +26,8 @@ class OktaConfiguration {
     let authIssuer: String!                         // Authorization Issuer URI
     let idTokenScopes : [String]!
     let authorizationServerScopes: [String]!
+    let authServerAuthEndpoint: String!
+    let authServerTokenEndpoint: String!
     
     
     init(){
@@ -34,6 +36,8 @@ class OktaConfiguration {
         redirectURI = "com.acmehealth://oauth"
         authorizationServerURL = "http://localhost:8088"
         authIssuer = "https://example.oktapreview.com/oauth2/aus80l8xhvgeoUgwr0h7"
+        authServerAuthEndpoint = "https://example.oktapreview.com/oauth2/aus8p24lycw4wg8Eg0h7/v1/authorize"
+        authServerTokenEndpoint = "https://example.oktapreview.com/oauth2/aus8p24lycw4wg8Eg0h7/v1/token"
         idTokenScopes = [
             "openid",
             "profile",

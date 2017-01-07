@@ -22,12 +22,12 @@ import Alamofire
 class LoginViewController: UIViewController {
     
     @IBOutlet weak var loadingIndicator: UIActivityIndicatorView!
-    @IBAction func signInAction(sender: AnyObject) {
+    @IBAction func signInAction(_ sender: AnyObject) {
         self.loadingIndicator.startAnimating()
-        for key in Array(NSUserDefaults.standardUserDefaults().dictionaryRepresentation().keys) {
-            NSUserDefaults.standardUserDefaults().removeObjectForKey(key)
+        for key in Array(UserDefaults.standard.dictionaryRepresentation().keys) {
+            UserDefaults.standard.removeObject(forKey: key)
         }
-        NSUserDefaults.standardUserDefaults().synchronize()
+        UserDefaults.standard.synchronize()
         
         /** Authenticate with Okta */
         if let authenticated = appAuth.loadState() {
@@ -36,7 +36,7 @@ class LoginViewController: UIViewController {
                     response, err in
                     /** Set up authorization server */
                     if response == true {
-                        appAuth.authorizationServerConfig(self) {
+                        appAuth.authorizationServerConfig(controller: self) {
                             response, err in
                             if response == true {
                                 /** Pull user attributes by calling userInfo endpoint */
@@ -45,7 +45,7 @@ class LoginViewController: UIViewController {
                                     if err == nil{
                                         /** Create local user from attributes */
                                         self.createUser(response!)
-                                    } else {  print(err)}
+                                    } else {  print(err as Any)}
                                 }
                             }
                         }
@@ -66,7 +66,7 @@ class LoginViewController: UIViewController {
     }
     
     /** Create local user based on OIDC idToken */
-    func createUser(json : NSDictionary) {
+    func createUser(_ json : NSDictionary) {
 
         let newUser = AcmeUser (
             firstName : (json["given_name"] != nil ? "\(json["given_name"]!)" : "John"),
@@ -78,7 +78,7 @@ class LoginViewController: UIViewController {
         )
         
         /** If no user ID -> Login again */
-        if newUser.id == nil {   self.navigationController?.popToRootViewControllerAnimated(true) }
+        if newUser.id == nil {   self.navigationController?.popToRootViewController(animated: true) }
         
         /** Load appointments from auth server */
         let accessToken = appAuth.authServerState?.lastTokenResponse?.accessToken
@@ -93,8 +93,8 @@ class LoginViewController: UIViewController {
             response, err in
             physicians = response!
             // Segue after load
-            let home = self.storyboard?.instantiateViewControllerWithIdentifier("MainController")
-            self.presentViewController(home!, animated: false, completion: nil)
+            let home = self.storyboard?.instantiateViewController(withIdentifier: "MainController")
+            self.present(home!, animated: false, completion: nil)
         }
         
         user = newUser
