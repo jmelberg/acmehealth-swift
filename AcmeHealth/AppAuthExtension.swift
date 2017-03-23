@@ -164,6 +164,7 @@ class AppAuthExtension: NSObject, OIDAuthStateChangeDelegate {
                         self.setAuthServerState(authorizationResponse)
                         completionHandler(true, nil)
                     } else {
+                        print("\(error)");
                         print("Authorization Error: \(error!.localizedDescription)")
                         self.setAuthServerState(nil)
                     }
