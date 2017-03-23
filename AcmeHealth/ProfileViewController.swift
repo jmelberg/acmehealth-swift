@@ -18,6 +18,10 @@
 import UIKit
 
 class ProfileViewController: UITableViewController, UIPickerViewDataSource, UIPickerViewDelegate {
+    @available(iOS 2.0, *)
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
+        return 1
+    }
     
     @IBOutlet weak var providerName: UILabel!
     @IBOutlet weak var physicianName: UILabel!
@@ -45,8 +49,8 @@ class ProfileViewController: UITableViewController, UIPickerViewDataSource, UIPi
         providerName.text = "\(user.provider)"
         
         /** Load image */
-        if let url = NSURL(string: user.picture){
-            if let data = NSData(contentsOfURL: url) {
+        if let url = URL(string: user.picture){
+            if let data = try? Data(contentsOf: url) {
                 profileImage.image = UIImage(data: data)
             }
         } else {
@@ -75,19 +79,20 @@ class ProfileViewController: UITableViewController, UIPickerViewDataSource, UIPi
         super.didReceiveMemoryWarning()
     }
     
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        tableView.deselectRowAtIndexPath(indexPath, animated: true)
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
         if indexPath.section == 2 && indexPath.row == 0 {
             togglePicker()
         }
     }
     
-    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         if pickerHidden && indexPath.section == 2 && indexPath.row == 1 {
             return 0
         }
         else {
-            return super.tableView(tableView, heightForRowAtIndexPath: indexPath)
+            return super.tableView(tableView, heightForRowAt: indexPath)
         }
     }
     
@@ -105,16 +110,16 @@ class ProfileViewController: UITableViewController, UIPickerViewDataSource, UIPi
         return 1
     }
     
-    func pickerView(pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
         return physicians.count;
     }
     
-    func pickerView(pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
         let name = physicians[row]["name"] as? String
         return name!
     }
     
-    func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         physicianName.text = physicians[row]["name"] as? String
     }
 }

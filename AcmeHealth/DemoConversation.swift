@@ -45,8 +45,8 @@ let AvatarIDPerson = "707-8956784-56"
 
 // Create avatar with Placeholder Image
 
-let AvatarProvider = JSQMessagesAvatarImageFactory().avatarImageWithPlaceholder(loadProviderImage((provider["name"] as? String)!))
-let AvatarPerson = JSQMessagesAvatarImageFactory().avatarImageWithPlaceholder(loadImage())
+let AvatarProvider = JSQMessagesAvatarImageFactory().avatarImage(withPlaceholder: loadProviderImage(name: (provider["name"] as? String)!))
+let AvatarPerson = JSQMessagesAvatarImageFactory().avatarImage(withPlaceholder: loadImage())
 
 
 // Helper Method for getting an avatar for a specific User.
@@ -66,9 +66,9 @@ func getAvatar(id: String) -> JSQMessagesAvatarImage{
 var conversationsList = [Conversation]()
 
 var conversation = [JSQMessage]()
-let message = JSQMessage(senderId: AvatarIDProvider, displayName: getName(User.Provider), text: "It looks like Friday, September 2nd is not available at 2:30pm. Would 4pm work?")
-let message2 = JSQMessage(senderId: AvatarIDPerson, displayName: getName(User.Person), text: "I will move some things on my calendar around and make it work for 4:15pm. Thanks!")
-let message3 = JSQMessage(senderId: AvatarIDProvider, displayName: getName(User.Provider), text: "You are confirmed for 4pm")
+let message = JSQMessage(senderId: AvatarIDProvider, displayName: getName(user: User.Provider), text: "It looks like Friday, September 2nd is not available at 2:30pm. Would 4pm work?")
+let message2 = JSQMessage(senderId: AvatarIDPerson, displayName: getName(user: User.Person), text: "I will move some things on my calendar around and make it work for 4:15pm. Thanks!")
+let message3 = JSQMessage(senderId: AvatarIDProvider, displayName: getName(user: User.Provider), text: "You are confirmed for 4pm")
 
 func makeNormalConversation()->[JSQMessage] {
     conversation = [message, message2, message3]

@@ -18,6 +18,11 @@
 import UIKit
 
 class RequestAppointmentViewController: UITableViewController, UIPickerViewDataSource, UIPickerViewDelegate {
+    @available(iOS 2.0, *)
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
+        return 1
+    }
+    
     
     @IBOutlet weak var date: UIDatePicker!
     @IBOutlet weak var doctorLabel: UILabel!
@@ -37,7 +42,7 @@ class RequestAppointmentViewController: UITableViewController, UIPickerViewDataS
         
     }
     @IBAction func exitRequest(sender: AnyObject) {
-        self.navigationController?.popViewControllerAnimated(true)
+        self.navigationController?.popViewController(animated: true)
     }
     
     var datePickerHidden = true
@@ -56,8 +61,8 @@ class RequestAppointmentViewController: UITableViewController, UIPickerViewDataS
         // Dispose of any resources that can be recreated.
     }
     
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        tableView.deselectRowAtIndexPath(indexPath, animated: true)
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
         if indexPath.section == 1 && indexPath.row == 0 {
             toggleDatepicker()
         }
@@ -66,7 +71,7 @@ class RequestAppointmentViewController: UITableViewController, UIPickerViewDataS
         }
     }
     
-    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         if datePickerHidden && indexPath.section == 1 && indexPath.row == 1 {
             return 0
         }
@@ -74,13 +79,13 @@ class RequestAppointmentViewController: UITableViewController, UIPickerViewDataS
             return 0
         }
         else {
-            return super.tableView(tableView, heightForRowAtIndexPath: indexPath)
+            return super.tableView(tableView, heightForRowAt: indexPath)
         }
     }
     
     
     func datePickerChanged () {
-        dateLabel.text = NSDateFormatter.localizedStringFromDate(date.date, dateStyle: NSDateFormatterStyle.MediumStyle, timeStyle: NSDateFormatterStyle.ShortStyle)
+        dateLabel.text = DateFormatter.localizedString(from: date.date, dateStyle: DateFormatter.Style.medium, timeStyle: DateFormatter.Style.short)
     }
     
     func toggleDatepicker() {
@@ -99,48 +104,48 @@ class RequestAppointmentViewController: UITableViewController, UIPickerViewDataS
         return 1
     }
     
-    func pickerView(pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
         return physicians.count;
     }
     
-    func pickerView(pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
         let name = physicians[row]["name"] as? String
         return name!
     }
     
-    func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
         doctorLabel.text = physicians[row]["name"] as? String
         togglePicker()
     }
     
         
     func formatDate(date : String) -> String? {
-        let dateFormatter = NSDateFormatter()
+        let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss +SSSS"
-        let formattedDate = dateFormatter.dateFromString(date)
+        let formattedDate = dateFormatter.date(from: date)
         
         // Convert from date to string
         dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
-        return dateFormatter.stringFromDate(formattedDate!)
+        return dateFormatter.string(from: formattedDate!)
 
     }
     
     func requestAppointment() {
-        let id = getPhysicianID("\(self.doctorLabel.text!)")!
-        let formattedDate = formatDate("\(self.date.date)")
+        let id = getPhysicianID(name: "\(self.doctorLabel.text!)")!
+        let formattedDate = formatDate(date: "\(self.date.date)")
         let params = [
             "comment" : self.reasonText.text,
             "startTime": formattedDate!,
             "providerId" : id,
             "patient" : "\(user.firstName) \(user.lastName)",
             "patientId" : user.id
-        ]
+            ] as [String : Any]
         
-        createAppointment(params){
+        createAppointment(params: params){
             response, error in
             print(response!)
             
-            self.navigationController?.popViewControllerAnimated(true)
+            self.navigationController?.popViewController(animated: true)
         }
     }
     

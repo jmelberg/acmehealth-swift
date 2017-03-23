@@ -23,30 +23,26 @@ var appointmentData: [NSDictionary]!
 var user: AcmeUser!
 var physicians : [NSDictionary]!
 
-let config: OktaConfiguration = OktaConfiguration()
-let appAuth: AppAuthExtension = AppAuthExtension()
-
 /** Create new user for lifecycle of open app */
 class AcmeUser {
-    var firstName : String!
-    var lastName : String!
-    var provider : String!
-    var email : String!
-    var physician : String!
-    var picture : String!
-    var id : String!
+    var firstName = "John"
+    var lastName = "Smith"
+    var provider = "Healthcare Cross"
+    var email = "example@example.com"
+    var physician: String?
+    var picture = "https://randomuser.me/api/portraits/thumb/men/1.jpg"
+    var id = ""
     
     func setFirst(firstName: String) {   self.firstName = firstName}
     func setLast(lastName: String) {self.lastName = lastName }
     func setProvider(provider: String) { self.provider = provider }
     func getDetails() -> String { return "\(firstName) \(lastName) \nEmail: \(email) \nPicture: \(picture)" }
 
-    init(firstName: String, lastName:String, email: String?, provider:String, picture:String, id: String) {
+    init(firstName: String, lastName:String, email: String, picture:String, id: String) {
+        
         self.firstName = firstName
         self.lastName = lastName
         self.email = email
-        self.provider = provider
-        self.physician = "Dr. John Doe"
         self.picture = picture
         self.id = id
     }
@@ -87,8 +83,8 @@ func getPhysicianUrl(id: String) -> String? {
 
 /** Loads user image */
 func loadImage() -> UIImage {
-    if let url = NSURL(string: activeUser.picture) {
-        if let data = NSData(contentsOfURL: url) {
+    if let url = URL(string: activeUser.picture) {
+        if let data = try? Data(contentsOf: url) {
             return UIImage(data: data)!
         }
     }
@@ -99,9 +95,9 @@ func loadImage() -> UIImage {
 
 /** Loads provider image */
 func loadProviderImage(name: String) -> UIImage {
-    let urlString = getPhysicianUrl(getPhysicianID(name)!)
-    if let url = NSURL(string: urlString!) {
-        if let data = NSData(contentsOfURL: url) {
+    let urlString = getPhysicianUrl(id: getPhysicianID(name: name)!)
+    if let url = URL(string: urlString!) {
+        if let data = try? Data(contentsOf: url) {
             return UIImage(data: data)!
         }
     }
