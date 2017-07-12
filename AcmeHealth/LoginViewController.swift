@@ -16,85 +16,78 @@
  */
 
 import UIKit
-import AppAuth
 import Alamofire
+import OktaAuth
 
 class LoginViewController: UIViewController {
     
     @IBOutlet weak var loadingIndicator: UIActivityIndicatorView!
     @IBAction func signInAction(sender: AnyObject) {
         self.loadingIndicator.startAnimating()
-        for key in Array(NSUserDefaults.standardUserDefaults().dictionaryRepresentation().keys) {
-            NSUserDefaults.standardUserDefaults().removeObjectForKey(key)
-        }
-        NSUserDefaults.standardUserDefaults().synchronize()
         
         /** Authenticate with Okta */
-        if let authenticated = appAuth.loadState() {
-            if authenticated == false {
-                appAuth.authenticate(self) {
-                    response, err in
-                    /** Set up authorization server */
-                    if response == true {
-                        appAuth.authorizationServerConfig(self) {
-                            response, err in
-                            if response == true {
-                                /** Pull user attributes by calling userInfo endpoint */
-                                appAuth.pullAttributes() {
-                                    response, err in
-                                    if err == nil{
-                                        /** Create local user from attributes */
-                                        self.createUser(response!)
-                                    } else {  print(err)}
-                                }
+        if OktaAuth.tokens?.get(forKey: "accessToken") == nil {
+            OktaAuth.login()
+                .start(self) {
+                    response, error in
+                    
+                    if error != nil { print(error!) }
+                    
+                    if let authResponse = response {
+                        // Store tokens in the keychain
+                        OktaAuth.tokens?.set(value: authResponse.accessToken!, forKey: "accessToken")
+                        OktaAuth.tokens?.set(value: authResponse.idToken!, forKey: "idToken")
+                        
+                        OktaAuth.userinfo() {
+                            response, error in
+                            if error == nil {
+                                self.createUser(json: response!)
+                            } else {
+                                print(error!)
                             }
                         }
                     }
-                }
             }
         }
-    }
-    
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
         
     }
+    
+    override func viewDidLoad() { super.viewDidLoad() }
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
     
     /** Create local user based on OIDC idToken */
-    func createUser(json : NSDictionary) {
-
+    func createUser(json: [String: Any]) {
         let newUser = AcmeUser (
-            firstName : (json["given_name"] != nil ? "\(json["given_name"]!)" : "John"),
-            lastName: (json["family_name"] != nil ? "\(json["family_name"]!)" : "Smith") ,
-            email : (json["email"] != nil ? "\(json["email"]!)" : "example@example.com"),
-            provider: "Healthcare Cross",
-            picture : (json["picture"] != nil ? "\(json["picture"]!)" : "https://randomuser.me/api/portraits/thumb/men/1.jpg"),
+            firstName : json["given_name"] as! String,
+            lastName: json["family_name"] as! String,
+            email : json["email"] as! String,
+            picture : json["picture"] as! String,
             id : "\(json["sub"]!)"
         )
         
         /** If no user ID -> Login again */
-        if newUser.id == nil {   self.navigationController?.popToRootViewControllerAnimated(true) }
+        if newUser.id == "nil" {   self.navigationController?.popToRootViewController(animated: true) }
         
         /** Load appointments from auth server */
-        let accessToken = appAuth.authServerState?.lastTokenResponse?.accessToken
+        let accessToken = OktaAuth.tokens?.get(forKey: "accessToken")
         
-        loadAppointments(accessToken!, id: newUser.id) {
+        loadAppointments(token: accessToken!, id: newUser.id) {
             response, err in
+            
             appointmentData = response!
         }
         
         /** Load physicians from auth server */
-        loadPhysicians(accessToken!) {
+        loadPhysicians(token: accessToken!) {
             response, err in
+            
             physicians = response!
             // Segue after load
-            let home = self.storyboard?.instantiateViewControllerWithIdentifier("MainController")
-            self.presentViewController(home!, animated: false, completion: nil)
+            let home = self.storyboard?.instantiateViewController(withIdentifier: "MainController")
+            self.present(home!, animated: false, completion: nil)
         }
         
         user = newUser

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+    <dict>
+        <key>clientId</key>
+        <string>Jw1nyzbsNihSuOETY3R1</string>
+        <key>issuer</key>
+        <string>https://jordandemo.oktapreview.com/oauth2/aus9wtufc8L041qj50h7</string>
+        <key>redirectUri</key>
+        <string>com.acmehealth:/callback</string>
+        <key>scopes</key>
+        <array>
+            <string>offline_access</string>
+            <string>openid</string>
+            <string>profile</string>
+            <string>email</string>
+            <string>appointments:read</string>
+            <string>appointments:write</string>
+            <string>appointments:cancel</string>
+            <string>providers:read</string>
+        </array>
+    </dict>
+</plist>

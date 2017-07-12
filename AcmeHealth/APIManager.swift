@@ -19,10 +19,13 @@ import Foundation
 import Alamofire
 
 /** Given accessToken and provider/user id -> returns all appointments */
-func loadAppointments(token: String, id: String, completionHandler: ([NSDictionary]?, NSError?) -> ()){
+let authorizationServerURL = "http://localhost:8088"
+
+func loadAppointments(token: String, id: String, completionHandler: @escaping ([NSDictionary]?, NSError?) -> ()){
     let headers = ["Authorization" : "Bearer \(token)",
                    "Accept" :  "application/json"]
-    Alamofire.request(.GET, config.authorizationServerURL + "/appointments/" + id, headers: headers)
+    let url = authorizationServerURL + "/appointments/" + id
+    Alamofire.request(url, headers: headers)
         .validate()
         .responseJSON { response in
             if let JSON = response.result.value {
@@ -33,10 +36,11 @@ func loadAppointments(token: String, id: String, completionHandler: ([NSDictiona
 }
 
 /* *Given accessToken  -> returns all providers */
-func loadPhysicians(token: String, completionHandler: ([NSDictionary]?, NSError?) -> ()){
+func loadPhysicians(token: String, completionHandler: @escaping ([NSDictionary]?, NSError?) -> ()){
     let headers = ["Authorization" : "Bearer \(token)",
                    "Accept" :  "application/json"]
-    Alamofire.request(.GET, config.authorizationServerURL + "/providers", headers : headers)
+    let url = authorizationServerURL + "/providers"
+    Alamofire.request(url, headers: headers)
         .validate()
         .responseJSON { response in
             if let JSON = response.result.value {
@@ -46,9 +50,10 @@ func loadPhysicians(token: String, completionHandler: ([NSDictionary]?, NSError?
 }
 
 /** Creates new appointment */
-func createAppointment(params: [String:String!], completionHandler: (NSDictionary?, NSError?) -> ()){
-    Alamofire.request(.POST, config.authorizationServerURL + "/appointments", parameters: params)
-        .responseJSON { response in
+func createAppointment(params: [String:Any], completionHandler: @escaping (NSDictionary?, NSError?) -> ()){
+    let url = authorizationServerURL + "/appointments"
+    Alamofire.request(url, method: .post, parameters: params)
+    .responseJSON { response in
             if let JSON = response.result.value {
                 completionHandler(JSON as? NSDictionary, nil)
             }
@@ -56,10 +61,11 @@ func createAppointment(params: [String:String!], completionHandler: (NSDictionar
 }
 
 /** Deletes appointment */
-func removeAppointment(token: String, id : String, completionHandler: (Bool?, NSError?) -> ()){
+func removeAppointment(token: String, id : String, completionHandler: @escaping (Bool?, NSError?) -> ()){
     let headers = ["Authorization" : "Bearer \(token)",
                    "Accept" :  "application/json"]
-    Alamofire.request(.DELETE, config.authorizationServerURL + "/appointments/" + id, headers: headers)
+    let url = authorizationServerURL + "/appointments/" + id
+    Alamofire.request(url, method: .delete, headers: headers)
         .validate()
         .responseJSON { response in
             if response.response?.statusCode == 204 {
