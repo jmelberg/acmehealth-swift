@@ -1,10 +1,11 @@
 # AcmeHealth: iOS Native Application with AppAuth
-Sample application for communicating with OAuth 2.0 and OpenID Connect providers. Demonstrates single-sign-on (SSO) with [AppAuth for iOS](https://github.com/openid/AppAuth-iOS) implemented in Swift.
 
-## Running the Sample with your Okta Organization
+This is a Swift app that uses [AppAuth for iOS](https://github.com/openid/AppAuth-iOS) for SSO to interact with the [AcmeHealth Server](https://github.com/jmelberg/acmehealth-server) to demonstrate the Okta API Access Management product. An earlier version was demonstrated on stage at Oktane 2016.
+
+## Project Setup In a Nutshell
 
 ### Pre-requisites
-This sample application was tested with an Okta org. If you do not have an Okta org, you can easily [sign up for a free Developer Okta org](https://www.okta.com/developer/signup/).
+This sample application was tested with an Okta org enabled with API Access Management. If you do not have an Okta org, you can easily [sign up for a free Developer Okta org](https://www.okta.com/developer/signup/).
 
 1. Verify OpenID Connect is enabled for your Okta organization. `Admin -> Applications -> Add Application -> Create New App -> OpenID Connect`
     - If you do not see this option, email [developers@okta.com](mailto:developers@okta.com) to enable it.
@@ -49,11 +50,13 @@ This project uses REST Service Authorization with JWTs to **cancel**, **confirm*
 6. Copy the **Issuer** under **Settings** - this will be used in `OktaConfiguration.swift`
 7. Follow the [AcmeHealth Server instructions](https://github.com/jmelberg/acmehealth-server/blob/master/README.md)
 
-### Configure the Sample Application
+### Clone Repository
+```$ git clone git@github.com:jmelberg/acmehealth-swift.git```
+
+### Install the Project
 Once the project is cloned, install the required dependencies with [CocoaPods](https://guides.cocoapods.org/using/getting-started.html) by running the following from the project root.
 
-    pod install
-    
+```$ pod install```
 
 **Important:** Open `AcmeHealth.xcworkspace`. This file should be used to run/test your application.
 
